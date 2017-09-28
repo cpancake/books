@@ -223,6 +223,11 @@ app.get("/share/:code", (req, res) => {
 
 // create a share code
 app.get("/share", checkAccount, (req, res) => {
+	if(req.session.tempAccess)
+	{
+		return renderPage(res, "share_noauth");
+	}
+
 	// encode date, plus some junk
 	crypto.randomBytes(2, (err, buffer) => {
 		if(err) throw err;
@@ -246,6 +251,7 @@ app.get("/auth/callback", passport.authenticate("discord", { failureRedirect: "/
 
 // goodbye!
 app.get("/auth/logout", function(req, res) {
+	req.session.tempAccess = false;
 	req.logout();
 	res.redirect(nconf.get("url") + "/");
 });
