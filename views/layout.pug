@@ -1,9 +1,16 @@
 doctype html
 html
 	head
-		title gay anime books
+		title= nconf.get("title")
+		link(href="https://cdnjs.cloudflare.com/ajax/libs/css-social-buttons/1.3.0/css/zocial.css", rel="stylesheet")
 		link(href="style.css", rel="stylesheet")
 	body
 		div.container
-			h1 gay anime books
+			div.header
+				h1= nconf.get("title")
+				if (render_menubar !== false)
+					div.menubar
+						a(href=(nconf.get("url") + "/")) Home
+						a(href=(nconf.get("url") + "/share")) Share
+						a(href=(nconf.get("url") + "/auth/logout")) Log Out
 			block body

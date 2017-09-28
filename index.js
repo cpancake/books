@@ -48,11 +48,51 @@ passport.use(new DiscordStrategy({
 	})
 );
 
+function renderPage(res, name, params)
+{
+	params = params || {};
+	params.nconf = nconf;
+	res.render(name, params);
+}
+
+// make base64 url safe without encoding
+function safeBase64(b64)
+{
+	return b64.replace(/\+/g, "~").replace(/\//g, "-").replace(/\=/g, "_");
+}
+
+function desafeBase64(b64)
+{
+	return b64.replace(/\~/g, "+").replace(/\-/g, "/").replace(/\_/g, "=");
+}
+
+// check if is authenticated through discord or through share link
+function isAuthenticated(req)
+{
+	if(req.session.tempAccess)
+	{
+		if(req.session.tempAccessUntil < Date.now())
+		{
+			req.session.tempAccess = false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	if(req.isAuthenticated()) return true;
+	return false;
+}
+
 // middleware to test if the user should be able to access this page
 function checkAccount(req, res, next)
 {
-	// if unauthenticated, send them straight to the auth page
-	if(!req.isAuthenticated()) return res.redirect(nconf.get("url") + "/auth");
+	// if unauthenticated, send them straight to the info page
+	if(!isAuthenticated(req)) return res.redirect(nconf.get("url") + "/info");
+
+	// if we're still in temp access, ignore server check
+	if(req.session.tempAccess) return next();
 
 	// check if they're in any of the servers allowed
 	var servers = nconf.get("discord:servers");
@@ -64,7 +104,7 @@ function checkAccount(req, res, next)
 		return next();
 
 	// can't get in
-	res.render("noauth");
+	renderPage(res, "noauth");
 }
 
 // return the name that the book should be sorted by
@@ -146,40 +186,51 @@ function getBooks()
 
 // get book index
 app.get("/", checkAccount, function(req, res) {
-	if(!req.isAuthenticated())
-	{
-		return res.redirect(nconf.get("url") + "/auth");
-	}
-
 	var data = getBooks();
-	res.render("index", { categories: data.categories, books: data.books });
+	renderPage(res, "index", { categories: data.categories, books: data.books });
 });
 
-// use a share code
-app.get("/share/:code", (req, res) => {
+app.get("/info", function(req, res) {
 	if(req.isAuthenticated())
 	{
 		return res.redirect(nconf.get("url") + "/");
 	}
 
+	renderPage(res, "info", { render_menubar: false });
+});
+
+// use a share code
+app.get("/share/:code", (req, res) => {
+	if(isAuthenticated(req))
+	{
+		return res.redirect(nconf.get("url") + "/");
+	}
+
+	var code = desafeBase64(req.params.code);
 	var decipher = crypto.createDecipher("aes-256-ctr", nconf.get("share_secret"));
-	var dec = decipher.update(req.params.code, "hex", "utf8");
+	var dec = decipher.update(code, "base64", "utf8");
 	dec += decipher.final("utf8");
 
-	var date = Date.parse(dec.substr(8));
-	console.log(typeof date);
+	var dateUtc = parseInt(dec.substr(4), 10);
+	// compute dateUtc + share_length
+	var dateEnd = dateUtc + (nconf.get("share_length") * 1000);
+	if(dateEnd < Date.now())
+		return renderPage(res, "share_fail");
+	req.session.tempAccess = true;
+	req.session.tempAccessUntil = dateEnd;
+	res.redirect(nconf.get("url") + "/");
 })
 
 // create a share code
 app.get("/share", checkAccount, (req, res) => {
 	// encode date, plus some junk
-	crypto.randomBytes(4, (err, buffer) => {
+	crypto.randomBytes(2, (err, buffer) => {
 		if(err) throw err;
-		var encode = buffer.toString("hex") + new Date().toTimeString();
+		var encode = buffer.toString("hex") + Date.now().toString();
 		var cipher = crypto.createCipher("aes-256-ctr", nconf.get("share_secret"));
-		var crypt = cipher.update(encode, "utf8", "hex");
-		crypt += cipher.final("hex");
-		res.render("share", { url: nconf.get("url") + "/share/" + crypt, back: nconf.get("url") + "/" });
+		var crypt = cipher.update(encode, "utf8", "base64");
+		crypt += cipher.final("base64");
+		renderPage(res, "share", { url: nconf.get("url") + "/share/" + safeBase64(crypt), back: nconf.get("url") + "/" });
 	})
 });
 
@@ -201,11 +252,6 @@ app.get("/auth/logout", function(req, res) {
 
 // download book
 app.get("/file/:name", checkAccount, function(req, res) {
-	if(!req.isAuthenticated())
-	{
-		return res.redirect(nconf.get("url") + "/auth");
-	}
-
 	var name = req.params.name;
 	var p = path.join(nconf.get("path"), name);
 	if(!fs.existsSync(p))

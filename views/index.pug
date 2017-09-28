@@ -12,7 +12,7 @@ block body
 								span.book-authors= " by " + book.authors.join(", ")
 							div.book-types
 								each ext in book.extensions
-									a(href="file/" + book.file + "." + ext)= ext
+									a(href=(nconf.get("url") + "/file/" + encodeURIComponent(book.file + "." + ext)))= ext
 	div.footer
 		p
 			em This website is for educational purposes only. If you have any complaints, you know where to find me.

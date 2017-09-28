@@ -18,8 +18,10 @@ A file named `config.template.json` is provided with this source code. To set up
     "path": "", // the path to the data folder (see next section)
     "port": 3001,
     "secret": "", // should be a random string, used for sessions
-    "share_secret": "", // should be a different string, used for sharing (not working yet)
-    "url": "http://localhost:3001" // the url of the web page
+    "share_secret": "", // should be a different string, used for sharing
+    "url": "http://localhost:3001", // the url of the web page
+    "share_length": 3600, // length in seconds that a share link works for
+    "title": "books": // the title of the web page
 }
 ```
 

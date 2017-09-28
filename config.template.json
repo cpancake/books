@@ -9,5 +9,7 @@
 	"port": 3001,
 	"secret": "",
 	"share_secret": "",
-	"url": "http://localhost:3001"
+	"url": "http://localhost:3001",
+	"share_length": 3600,
+	"title": "books"
 }

@@ -23,6 +23,11 @@ a
 	color: #33b5e5;
 }
 
+a:hover
+{
+	color: #15799e;
+}
+
 .container
 {
 	box-sizing: border-box;
@@ -80,4 +85,37 @@ a
 	font-size: 1.25em;
 	font-weight: normal;
 	border-bottom: 1px solid #dddddd;
+}
+
+.header
+{
+	margin-bottom: 30px;
+	height: 40px;
+	line-height: 40px;
+}
+
+.header h1
+{
+	margin: 0;
+	float: left;
+}
+
+.menubar
+{
+	float: right;
+}
+
+.menubar a
+{
+	padding: 0 20px 0 0;
+}
+
+.menubar a:last-child
+{
+	padding: 0;
+}
+
+.center
+{
+	text-align: center;
 }

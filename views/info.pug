@@ -1,0 +1,6 @@
+extends layout
+block body
+	p Welcome to the hit books web page that you all know and love. If you're supposed to be here, you should log in with your Discord account:
+	p.center
+		a(href=(nconf.get("url") + "/auth"), class="zocial discordapp") Sign in with Discord
+	p If you're not supposed to be here, well, why are you?
