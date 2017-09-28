@@ -1,0 +1,83 @@
+html,body
+{
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+
+body
+{
+	color: #333333;
+	background: #ffffff;
+	font-family: "Trebuchet MS", "Arial", sans-serif;
+}
+
+p, h1
+{
+	margin-top: 0;
+}
+
+a
+{
+	text-decoration: none;
+	color: #33b5e5;
+}
+
+.container
+{
+	box-sizing: border-box;
+	width: 960px;
+	height: 100%;
+	margin: auto;
+	padding: 20px;
+}
+
+.books
+{
+	margin-bottom: 25px;
+}
+
+.footer
+{
+	margin-bottom: 50px;
+	font-size: 0.75em;
+	color: #aaa;
+	text-align: center;
+}
+
+.book
+{
+	width: 100%;
+	line-height: 30px;
+	border-bottom: 1px solid #dddddd;
+}
+
+.book-authors
+{
+	color: #aaaaaa;
+	font-size: 0.8em;
+}
+
+.book:last-child
+{
+	border: 0;
+}
+
+.book-types
+{
+	float: right;
+}
+
+.book-types a
+{
+	padding-left: 10px;
+}
+
+.category-title
+{
+	margin-bottom: 0;
+	padding-bottom: 5px;
+	font-size: 1.25em;
+	font-weight: normal;
+	border-bottom: 1px solid #dddddd;
+}
