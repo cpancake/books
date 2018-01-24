@@ -111,7 +111,7 @@ function checkAccount(req, res, next)
 // ex, "The Giver" -> "Giver"
 function sortTitle(title)
 {
-	return title.replace(/^(The|An|A)/, "");
+	return title.replace(/^(The|An|A)\s/, "");
 }
 
 // returns a list of all books
@@ -257,7 +257,20 @@ app.get("/auth/logout", function(req, res) {
 });
 
 // download book
-app.get("/file/:name", checkAccount, function(req, res) {
+app.get("/file/:code/:name", function(req, res) {
+	// validate URL code
+	var code = new Buffer(req.params.code, "base64").toString("utf8");
+	var data = code.split("|");
+	var hash = 
+		crypto.createHash("sha256")
+		.update(data[1] + "|" + nconf.get("share_secret"))
+		.digest("hex")
+		.substr(0, 16);
+
+	console.log(hash);
+	if(hash != data[0])
+		return res.status(403).send("access denied - let me know");
+
 	var name = req.params.name;
 	var p = path.join(nconf.get("path"), name);
 	if(!fs.existsSync(p))
@@ -267,6 +280,14 @@ app.get("/file/:name", checkAccount, function(req, res) {
 	}
 
 	res.sendFile(p);
+});
+
+// redirect with code
+app.get("/file/:name", checkAccount, (req, res) => {
+	var hash = crypto.createHash("sha256").update(req.user.id + "|" + nconf.get("share_secret")).digest("hex").substr(0, 16);
+	var data = hash + "|" + req.user.id;
+	var name = req.params.name;
+	res.redirect(nconf.get("url") + "/file/" + encodeURIComponent(new Buffer(data).toString("base64")) + "/" + encodeURIComponent(name));
 });
 
 app.listen(nconf.get("port"));
