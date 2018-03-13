@@ -3,9 +3,20 @@ var fs = require("fs"),
     sort = require("javascript-natural-sort"),
 	_util = require("./util");
 
-function getBooks(nconf, includeUnsorted)
+// get all the books
+// includeUnsorted - should we include books that have no metadata? default is false
+// restricted - should we get books that are restricted or regular books? default is false (regular)
+function getBooks(nconf, includeUnsorted, restricted)
 {
-	var files = fs.readdirSync(nconf.get("path"));
+	if(includeUnsorted === undefined) includeUnsorted = false;
+	if(restricted === undefined) restricted = false;
+
+	var files = [];
+	if(restricted)
+		files = fs.readdirSync(nconf.get("restricted_path"));
+	else
+		files = fs.readdirSync(nconf.get("path"));
+
 	var books = {};
 
 	// go file by file through the data folder
@@ -35,7 +46,11 @@ function getBooks(nconf, includeUnsorted)
 	});
 
 	// read books.json
-	var info = JSON.parse(fs.readFileSync(nconf.get("path") + "/books.json"));
+	var info = {};
+	if(restricted)
+		info = JSON.parse(fs.readFileSync(nconf.get("restricted_path") + "/books.json"));
+	else
+		info = JSON.parse(fs.readFileSync(nconf.get("path") + "/books.json"));
 
 	var unsortedCount = 0;
 	var categories = {};
@@ -75,6 +90,8 @@ function getBooks(nconf, includeUnsorted)
 
 	// sort books inside categories
 	Object.keys(categories).forEach((c) => {
+		if(!categories[c])
+			categories[c] = [];
 		categories[c].sort((a, b) => sort(_util.sortTitle(a.name.toLowerCase()), _util.sortTitle(b.name.toLowerCase())));
 	});
 

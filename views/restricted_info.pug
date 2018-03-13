@@ -1,0 +1,20 @@
+extends layout
+block body
+	h2 Restricted Section
+	p
+		| Like your local 
+		a(href="https://youtu.be/eXlmeJWUNvw") Blockbuster Video
+		| , we offer a veritable treasure trove of content in our restricted section.
+		| And unlike the Blockbuster Video restricted section, as far as I know (not like I ever went to one), it's not porn.
+	if isCool
+		p
+			| And lucky you! Due to either a specific whitelisting or membership in a whitelisted server, you've made it through that curtain
+			| and you're now ready to look awkwardly at the other patrons who've made the same life choices that you have. Check it out!
+		p.center
+			a(href=(nconf.get("url") + "/restricted")) Enter the Restricted Section
+	else
+		p
+			| Unfortunately, our extremely complex and detailed computer model has determined that you are
+			em  not 
+			| eligible for restricted section access at this time. If you believe that you are, indeed, cool enough to handle this,
+			| then you know where I am.

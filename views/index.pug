@@ -1,5 +1,7 @@
 extends layout
 block body
+	if restricted
+		h2.restricted-title Restricted Section
 	div.books
 		each category in categories
 			div.category
@@ -12,7 +14,10 @@ block body
 								span.book-authors= " by " + book.authors.join(", ")
 							div.book-types
 								each ext in book.extensions
-									a(href=(nconf.get("url") + "/file/" + encodeURIComponent(book.file + "." + ext)))= ext
+									if restricted
+										a(href=(nconf.get("url")) + "/file/restricted/" + encodeURIComponent(book.file + "." + ext))= ext
+									else
+										a(href=(nconf.get("url") + "/file/" + encodeURIComponent(book.file + "." + ext)))= ext
 					if category == "Other" && unsortedCount > 0
 						div.book
 							if unsortedCount == 1

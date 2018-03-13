@@ -60,3 +60,5 @@ config.json
 data
 test_data.json
 db
+auth.json
+data_private

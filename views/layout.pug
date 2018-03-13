@@ -11,7 +11,6 @@ html
 				if (render_menubar !== false)
 					div.menubar
 						a(href=(nconf.get("url") + "/")) Home
-						if user.admin
-							a(href=(nconf.get("url") + "/admin")) Admin
+						a(href=(nconf.get("url") + "/restricted/info")) Restricted Section
 						a(href=(nconf.get("url") + "/auth/logout")) Log Out
 			block body

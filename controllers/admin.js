@@ -23,7 +23,7 @@ function guilds(nconf, db, router)
 module.exports = function(nconf, db)
 {
 	var router = express.Router();
-	router.use(_util.checkAccount(nconf, true));
+	router.use(_util.checkAccount(nconf, _util.PERMISSION_LEVELS.ADMIN));
 
 	//guilds(nconf, db, router);
 

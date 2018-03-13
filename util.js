@@ -1,6 +1,21 @@
-function userInServers(req, nconf)
+var path = require("path");
+
+const PERMISSION_LEVELS = {
+	NONE: 0,
+	REGULAR: 1,
+	RESTRICTED: 2,
+	ADMIN: 3
+};
+
+function userInServers(req, nconf, checkRestricted)
 {
-	var servers = nconf.get("discord:servers");
+	if(req.user == null) return false;
+	
+	var users = nconf.get(checkRestricted ? "restricted:users" : "discord:users");
+	if(users.indexOf(req.user.id) != -1)
+		return true;
+
+	var servers = nconf.get(checkRestricted ? "restricted:servers" : "discord:servers");
 	var anyGood = req.user.guilds.some(function(e, i, a) {
 		return servers.indexOf(e.id) != -1;
 	});
@@ -26,24 +41,28 @@ function isAuthenticated(req)
 	return req.isAuthenticated();
 }
 
-function checkAccount(nconf, checkAdmin)
+// middleware to check if a user is logged in
+// check level - the constant from PERMISSION_LEVELS to check if this user is at or above
+function checkAccount(nconf, checkLevel)
 {
+	if(checkLevel === undefined)
+	{
+		checkLevel = PERMISSION_LEVELS.REGULAR;
+	}
+
 	// middleware to test if the user should be able to access this page
 	return function checkAccountInternal(req, res, next)
 	{
 		// if unauthenticated, send them straight to the info page
 		if(!isAuthenticated(req)) return res.redirect(nconf.get("url") + "/info");
 
-		if(checkAdmin && req.user.admin)
-			next();
-		else if(checkAdmin)
-			return renderPage(res, "noauth");
-
-		// if we're still in temp access, ignore server check
-		if(req.session.tempAccess) return next();
-
-		// check if they're in any of the servers allowed
-		if(userInServers(req, nconf))
+		if(checkLevel >= PERMISSION_LEVELS.ADMIN && req.user.admin)
+			return next();
+		else if(checkLevel >= PERMISSION_LEVELS.RESTRICTED && userInServers(req, nconf, true))
+			return next();
+		else if(
+			checkLevel >= PERMISSION_LEVELS.REGULAR && 
+			(req.session.tempAccess || userInServers(req, nconf)))
 			return next();
 
 		// can't get in
@@ -78,6 +97,12 @@ exports.renderPage = function renderPage(req, res, nconf, name, params)
 	res.render(name, params);
 }
 
+exports.sanitizePath = function(path) 
+{
+	return path.replace(new RegExp(path.sep, "g"), "");
+}
+
 exports.userInServers = userInServers;
 exports.isAuthenticated = isAuthenticated;
 exports.checkAccount = checkAccount;
+exports.PERMISSION_LEVELS = PERMISSION_LEVELS;
