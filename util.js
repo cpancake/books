@@ -64,9 +64,10 @@ exports.sortTitle = function sortTitle(title)
 	return title.replace(/^(The|An|A)\s/, "");
 }
 
-exports.renderPage = function renderPage(res, nconf, name, params)
+exports.renderPage = function renderPage(req, res, nconf, name, params)
 {
 	params = params || {};
+	params.user = req.user;
 	params.nconf = nconf;
 	params.root_url = nconf.get("url");
 	res.render(name, params);

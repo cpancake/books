@@ -5,7 +5,6 @@ var nconf = require("nconf"),
     crypto = require("crypto"),
     _util = require("./util"),
     books = require("./books"),
-    shareController = require("./controllers/sharing"),
     authController = require("./controllers/auth");
 
 // setup nconf
@@ -28,12 +27,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/auth", authController(nconf));
-app.use("/share", shareController(nconf));
 
 // get book index
 app.get("/", _util.checkAccount(nconf), function(req, res) {
 	var data = books.getBooks(nconf);
-	_util.renderPage(res, nconf, "index", { categories: data.categories, books: data.books });
+	_util.renderPage(req, res, nconf, "index", { categories: data.categories, books: data.books });
 });
 
 app.get("/info", function(req, res) {
@@ -42,13 +40,13 @@ app.get("/info", function(req, res) {
 		return res.redirect(nconf.get("url") + "/");
 	}
 
-	_util.renderPage(res, nconf, "info", { render_menubar: false });
+	_util.renderPage(req, res, nconf, "info", { render_menubar: false });
 });
 
 app.get("/info/external", function(req, res) {
 	if(_util.isAuthenticated(req))
 		return res.redirect(nconf.get("blog_url"));
-	_util.renderPage(res, nconf, "info_external", { render_menubar: false });
+	_util.renderPage(req, res, nconf, "info_external", { render_menubar: false });
 });
 
 // download book

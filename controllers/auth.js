@@ -41,6 +41,8 @@ function initializeReal(nconf)
 			scope: scopes
 		},
 		function(accessToken, refreshToken, profile, done) {
+			var admins = nconf.get("admins");
+			profile.admin = admins.indexOf(profile.id) !== -1;
 			return done(null, profile);
 		})
 	);
