@@ -3,7 +3,7 @@ var fs = require("fs"),
     sort = require("javascript-natural-sort"),
 	_util = require("./util");
 
-exports.getBooks = function getBooks(nconf)
+function getBooks(nconf, includeUnsorted)
 {
 	var files = fs.readdirSync(nconf.get("path"));
 	var books = {};
@@ -29,6 +29,7 @@ exports.getBooks = function getBooks(nconf)
 			name: name,
 			extensions: [ext],
 			file: name,
+			unsorted: false,
 			category: "Other"
 		};
 	});
@@ -36,6 +37,7 @@ exports.getBooks = function getBooks(nconf)
 	// read books.json
 	var info = JSON.parse(fs.readFileSync(nconf.get("path") + "/books.json"));
 
+	var unsortedCount = 0;
 	var categories = {};
 	// this is a bit of a mess, but basically what we're doing here is going over every book
 	// and finding out if we have an info on it in books.json
@@ -45,7 +47,12 @@ exports.getBooks = function getBooks(nconf)
 			var book = books[k];
 			var bookInfo = info[k];
 			// nothing in books.json, go with defaults
-			if(!bookInfo) return book;
+			if(!bookInfo)
+			{
+				book.unsorted = true;
+				unsortedCount++;
+				return book;
+			}
 
 			book.name = bookInfo.name || book.name;
 			book.authors = bookInfo.authors;
@@ -53,6 +60,8 @@ exports.getBooks = function getBooks(nconf)
 			return book;
 		})
 		.forEach((b) => {
+			if(!includeUnsorted && b.unsorted) return;
+
 			// add book to the proper category
 			if(categories[b.category])
 			{
@@ -66,8 +75,16 @@ exports.getBooks = function getBooks(nconf)
 
 	// sort books inside categories
 	Object.keys(categories).forEach((c) => {
-		categories[c].sort((a, b) => sort(_util.sortTitle(a.name), _util.sortTitle(b.name)));
+		categories[c].sort((a, b) => sort(_util.sortTitle(a.name.toLowerCase()), _util.sortTitle(b.name.toLowerCase())));
 	});
 
-	return {books: categories, categories: info._categories};
+	return {books: categories, categories: info._categories, unsortedCount: unsortedCount};
 };
+
+function getUnsortedBooks(nconf)
+{
+	return getBooks(nconf, true).books["Other"].filter(b => b.unsorted);
+}
+
+exports.getBooks = getBooks;
+exports.getUnsortedBooks = getUnsortedBooks;

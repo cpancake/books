@@ -13,6 +13,12 @@ block body
 							div.book-types
 								each ext in book.extensions
 									a(href=(nconf.get("url") + "/file/" + encodeURIComponent(book.file + "." + ext)))= ext
+					if category == "Other" && unsortedCount > 0
+						div.book
+							if unsortedCount == 1
+								em.book-title= "There is currently " + unsortedCount + " unsorted book. Complain about this."
+							else
+								em.book-title= "There are currently " + unsortedCount + " unsorted books. Complain about this."
 	div.footer
 		p
 			em This website is for educational purposes only. If you have any complaints, you know where to find me.

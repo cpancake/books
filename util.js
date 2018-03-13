@@ -26,13 +26,18 @@ function isAuthenticated(req)
 	return req.isAuthenticated();
 }
 
-function checkAccount(nconf)
+function checkAccount(nconf, checkAdmin)
 {
 	// middleware to test if the user should be able to access this page
 	return function checkAccountInternal(req, res, next)
 	{
 		// if unauthenticated, send them straight to the info page
 		if(!isAuthenticated(req)) return res.redirect(nconf.get("url") + "/info");
+
+		if(checkAdmin && req.user.admin)
+			next();
+		else if(checkAdmin)
+			return renderPage(res, "noauth");
 
 		// if we're still in temp access, ignore server check
 		if(req.session.tempAccess) return next();

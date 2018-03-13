@@ -7,11 +7,14 @@
     "express": "^4.14.1",
     "express-session": "^1.15.1",
     "javascript-natural-sort": "^0.7.1",
+    "leveldown": "^3.0.0",
+    "levelup": "^2.0.2",
     "nconf": "^0.8.4",
     "passport": "^0.3.2",
     "passport-discord": "^0.1.1",
     "passport-dummy": "0.0.1",
     "pug": "^2.0.0-beta11",
+    "request": "^2.85.0",
     "serve-static": "^1.11.2"
   }
 }
