@@ -38,7 +38,7 @@ function initializeReal(nconf)
 			clientID: nconf.get("discord:id"),
 			clientSecret: nconf.get("discord:secret"),
 			callbackURL: nconf.get("url") + "/auth/callback",
-			scope: scopes
+			scope: ["identify", "guilds"]
 		},
 		function(accessToken, refreshToken, profile, done) {
 			var admins = nconf.get("admins");

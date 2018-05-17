@@ -1,5 +1,7 @@
 var crypto = require("crypto"),
 	express = require("express"),
+	path = require("path"),
+	fs = require("fs"),
 	_util = require("../util"),
 	books = require("../books");
 
@@ -32,6 +34,19 @@ module.exports = function(nconf)
 	router.get("/restricted/info", _util.checkAccount(nconf), (req, res) => {
 		var isCool = _util.userInServers(req, nconf, true);
 		_util.renderPage(req, res, nconf, "restricted_info", { isCool: isCool });
+	});
+
+	// restricted files can't be shared, so we don't need any faux-crypto
+	router.get("/file/restricted/:name", _util.checkAccount(nconf, _util.PERMISSION_LEVELS.RESTRICTED), (req, res) => {
+		var name = _util.sanitizeName(req.params.name);
+		var p = path.join(nconf.get("restricted_path"), name);
+		if(!fs.existsSync(p))
+		{
+			res.status(404).send("not found");
+			return;
+		}
+
+		res.sendFile(p);
 	});
 
 	// download book
@@ -67,22 +82,18 @@ module.exports = function(nconf)
 		res.redirect(nconf.get("url") + "/file/" + encodeURIComponent(new Buffer(data).toString("base64")) + "/" + encodeURIComponent(name));
 	});
 
-	// restricted files can't be shared, so we don't need any faux-crypto
-	router.get("/file/restricted/:name", _util.checkAccount(nconf, _util.PERMISSION_LEVELS.RESTRICTED), (req, res) => {
-		var name = _util.sanitizeName(req.params.name);
-		var p = path.join(nconf.get("restricted_path"), name);
-		if(!fs.existsSync(p))
-		{
-			res.status(404).send("not found");
-			return;
-		}
-
-		res.sendFile(p);
-	});
-
 	// unsorted books
-	router.get("/unsorted.json", _util.checkAccount(nconf), (req, res) => {
-		res.json({ unsorted_books: books.getUnsortedBooks(nconf) });
+	router.get("/unsorted.json", _util.checkAccount(nconf, _util.PERMISSION_LEVELS.ADMIN), (req, res) => {
+		var unsorted = books.getUnsortedBooks(nconf, req.query.restricted);
+		var dict = {};
+		unsorted.forEach((b) => {
+			dict[b.name] = {
+				name: b.name,
+				authors: ["Unknown"],
+				category: "Other"
+			};
+		});
+		res.json(dict);
 	});
 
 	// a logged in admin user can visit this url to reload the config file

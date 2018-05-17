@@ -98,9 +98,9 @@ function getBooks(nconf, includeUnsorted, restricted)
 	return {books: categories, categories: info._categories, unsortedCount: unsortedCount};
 };
 
-function getUnsortedBooks(nconf)
+function getUnsortedBooks(nconf, restricted)
 {
-	return getBooks(nconf, true).books["Other"].filter(b => b.unsorted);
+	return getBooks(nconf, true, restricted).books["Other"].filter(b => b.unsorted);
 }
 
 exports.getBooks = getBooks;

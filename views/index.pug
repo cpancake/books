@@ -7,7 +7,7 @@ block body
 			div.category
 				h2.category-title= category
 				div.category-books
-					each book in books[category]
+					each book in (books[category] || [])
 						div.book
 							span.book-title= book.name
 							if book.authors
