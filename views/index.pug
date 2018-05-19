@@ -7,17 +7,35 @@ block body
 			div.category
 				h2.category-title= category
 				div.category-books
-					each book in (books[category] || [])
+					each book in (books[category] || []).filter((b) => b.series == null)
 						div.book
 							span.book-title= book.name
 							if book.authors
 								span.book-authors= " by " + book.authors.join(", ")
 							div.book-types
-								each ext in book.extensions
-									if restricted
-										a(href=(nconf.get("url")) + "/file/restricted/" + encodeURIComponent(book.file + "." + ext))= ext
-									else
-										a(href=(nconf.get("url") + "/file/" + encodeURIComponent(book.file + "." + ext)))= ext
+								if !book.isSeries
+									each ext in book.extensions
+										if restricted
+											a(href=(nconf.get("url")) + "/file/restricted/" + encodeURIComponent(book.file + "." + ext))= ext
+										else
+											a(href=(nconf.get("url") + "/file/" + encodeURIComponent(book.file + "." + ext)))= ext
+								else
+									a(href="javascript:void(null)", onClick="toggleBookSeries('" + book.key + "')", id="book-view-" + book.key) (view)
+						if book.isSeries
+							div.series-block(id="series-" + book.key)
+								each bk in series[book.key]
+									div.book
+										span.series-book-number= bk.seriesPos || 1
+										span.book-title= bk.name
+										if bk.authors
+											span.book-authors= " by " + bk.authors.join(", ")
+										div.book-types
+											each ext in bk.extensions
+												if restricted
+													a(href=(nconf.get("url")) + "/file/restricted/" + encodeURIComponent(bk.file + "." + ext))= ext
+												else
+													a(href=(nconf.get("url") + "/file/" + encodeURIComponent(bk.file + "." + ext)))= ext
+
 					if category == "Other" && unsortedCount > 0
 						div.book
 							if unsortedCount == 1

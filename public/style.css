@@ -119,3 +119,20 @@ a:hover
 {
 	text-align: center;
 }
+
+.series-block
+{
+	display: none;
+}
+
+.series-block .book
+{
+	margin-left: 3%;
+	width: 97%;
+}
+
+.series-block .book .series-book-number
+{
+	margin-right: 5px;
+	color: #aaa;
+}
